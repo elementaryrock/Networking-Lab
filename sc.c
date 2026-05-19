@@ -1,89 +1,95 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
-void Stop(int FrameSize);
-void Go(int FrameSize,int WindowSize);
-void Sel(int FrameSize,int WindowSize);
+void stopAndWait(int totalFrames);
+void goBackN(int totalFrames, int windowSize);
+void selectiveRepeat(int totalFrames, int windowSize);
 
-int main(){
-    int FrameSize=5,WindowSize=3,c;
+int main() {
+    int choice, totalFrames = 5, windowSize = 3;
     srand(time(NULL));
-    printf("\nMenu:\n1.Stop-and-Wait\n2.Go-Back-N\n3.Selective-Repeat\n");
-    printf("\nEnter Choice: \n");
-    scanf("%d",&c);
+    printf("--- Network Flow Control Simulation ---\n");
+    printf("1. Stop and Wait ARQ\n");
+    printf("2. Go-Back-N ARQ\n");
+    printf("3. Selective Repeat ARQ\n");
+    printf("Enter choice: ");
+    scanf("%d", &choice);
 
-    switch(c){
-        case 1:
-            Stop(FrameSize);
-            break;
-        case 2:
-            Go(FrameSize,WindowSize);
-            break;
-        case 3:
-            Sel(FrameSize,WindowSize);
-            break;
+    switch (choice) {
+        case 1: stopAndWait(totalFrames); break;
+        case 2: goBackN(totalFrames, windowSize); break;
+        case 3: selectiveRepeat(totalFrames, windowSize); break;
+        default: printf("Invalid choice!\n");
     }
+
+    return 0;
 }
 
-void Stop(int FrameSize){
-    int i=1;
-    while(i<FrameSize){
-        printf("\n[[Sending] Frame %d]\n",i);
-        if(rand() %5==0){
-            printf("\n[[ERROR]Dropped Frame%d]\n",i);
+void stopAndWait(int totalFrames) {
+    int i = 1;
+    while (i <= totalFrames) {
+        printf("\n[Sender]: Sending Frame %d...", i);
+        if (rand() % 5 == 0) {
+            printf("\n[Error]: Frame %d lost! Retransmitting...", i);
             continue;
         }
-        printf("\n[[RECEIVED]Frame %d]\n",i);
+        printf("\n[Receiver]: Frame %d received. Sending ACK %d...", i, i + 1);
         i++;
     }
+    printf("\n\nAll frames sent successfully.\n");
 }
 
-void Go(int FrameSize,int WindowSize){
-    int ack=0,send=0;
-    while(ack<FrameSize){
-
-        for(int i=send;i<ack+WindowSize && i<FrameSize;i++){
-            printf("\n[Send] Frame %d",i+1);
-            send++;
+void goBackN(int totalFrames, int windowSize) {
+    int sent = 0, acked = 0;
+    while (acked < totalFrames) {
+        for (int i = sent; i < acked + windowSize && i < totalFrames; i++) {
+            printf("\n[Sender]: Sending Frame %d", i);
+            sent++;
         }
-        if(rand()%4==0){
-            printf("\n[[ERROR]Dropped Frame %d]\n",ack+1);
+        int randomBit = rand() % 4;
+        if (randomBit == 0) {
+            printf("\n[Error]: Frame %d lost! Window resets.", acked);
+            sent = acked;
+        } else {
+            printf("\n[Receiver]: Received Frame %d. Sending ACK.", acked);
+            acked++;
         }
-        else{
-            printf("\n[[RECEIVED]Frame %d]\n",ack+1);
-            ack++;
-        }
-
     }
+    printf("\n\nAll frames sent successfully.\n");
 }
 
+void selectiveRepeat(int totalFrames, int windowSize) {
+    printf("\n========== Selective Repeat ARQ ==========\n");
 
-void Sel(int FrameSize,int WindowSize){
-    bool ack[10]={false};
-    int ackc=0,pass=1;
-    while(ackc<FrameSize){
-        printf("\nPass %d",pass);
+    bool acked[64] = {false};
+    int ackedCount = 0;
+    int pass = 1;
+
+    while (ackedCount < totalFrames) {
+        printf("--- Pass %d ---\n", pass);
         pass++;
-        int send=0;
-        for(int i=0;i<FrameSize && send<WindowSize;i++){
-            if(ack[i]){
+
+        int sent = 0;
+        for (int i = 0; i < totalFrames && sent < windowSize; i++) {
+            if (acked[i])
                 continue;
-            }
 
-            send++;
-            printf("\n[Send] Frame %d",i+1);
+            sent++;
+            printf("  [Sender] : Sending Frame %d", i);
 
-            if(rand()%3!=0){
-                printf("\n[[RECEIVED]Frame %d]\n",i+1);
-                ack[i]=true;
-                ackc++;
-            }
-            else{
-                printf("\n[[ERROR]Dropped Frame %d]\n",i+1);
+            if (!((rand() % 3) == 0)) {
+                printf(" -> ACKed\n");
+                acked[i] = true;
+                ackedCount++;
+            } else {
+                printf(" -> Dropped!\n");
             }
         }
+        printf("\n");
     }
+
+    printf(">> All %d frames delivered successfully.\n", totalFrames);
 }
