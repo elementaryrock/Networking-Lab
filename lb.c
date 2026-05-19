@@ -3,54 +3,53 @@
 int main(){
     int b,op,i,bs=0,n;
 
-    printf("Enter bucket capacity,output rate and no of incoming packets: ");
+    printf("\nEnter bucket capacity,output rate and no of packets :\n");
     scanf("%d%d%d",&b,&op,&n);
 
     int a[n];
 
-    for (i=0;i<n;i++){
-        printf("Enter packet size of packet %d: ",i+1);
+    for(i=0;i<n;i++){
+        printf("\nEnter size of packet %d :\n",i+1);
         scanf("%d",&a[i]);
     }
 
-    for (i=0;i<n;i++){
-        printf("Time is %d\n",i+1);
-        printf("incoming packet: %d\n",a[i]);
-        printf("output rate: %d\n",op);
-
+    for(i=0;i<n;i++){
+        printf("\n======Time is %d\n======",i+1);
+        printf("\nIncoming packet %d\n",i+1);
+        printf("\nOutput rate: %d\n",op);
         if(a[i]+bs<=b){
             bs=bs+a[i];
-            printf("Accepted\n");
+            printf("\nAccepted\n");
         }
         else{
-            printf("Rejected\n");
+            printf("\nRejected\n");
         }
+
         if(bs!=0){
             if(bs>op){
                 bs=bs-op;
-                printf("Leaked data is %d\n",op);
+                printf("\nLeaked size : %d\n",op);
             }
             else{
-                printf("Leaked data is %d\n",bs);
+                printf("\nLeaked size : %d\n",bs);
                 bs=0;
             }
         }
         else{
-            printf("No packets to remove\n");
+            printf("\nNo packets to remove\n");
         }
     }
-
-    int extra_tick=n+1;
-
+    int extra_time=n+1;
     while(bs>0){
-        printf("Time is %d\n",extra_tick++);
-        printf("output rate: %d\n",op);
+        printf("\n======Time is %d\n======",extra_time++);
+        printf("\nIncoming packet 0\n");
+        printf("\nOutput rate: %d\n",op);
         if(bs>op){
             bs=bs-op;
-            printf("Leaked data is %d\n",op);
+            printf("\nLeaked size : %d\n",op);
         }
         else{
-            printf("Leaked data is %d\n",bs);
+            printf("\nLeaked size : %d\n",bs);
             bs=0;
         }
     }
