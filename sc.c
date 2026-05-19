@@ -74,13 +74,13 @@ void selectiveRepeat(int totalFrames, int windowSize) {
 
         int sent = 0;
         for (int i = 0; i < totalFrames && sent < windowSize; i++) {
-            if (acked[i])
+            if (acked[i]==true)
                 continue;
 
             sent++;
             printf("  [Sender] : Sending Frame %d", i);
 
-            if (!((rand() % 3) == 0)) {
+            if (rand() % 3!= 0){
                 printf(" -> ACKed\n");
                 acked[i] = true;
                 ackedCount++;
